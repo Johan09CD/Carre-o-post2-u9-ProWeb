@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/registro",
                         "/css/**", "/js/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/error/**").permitAll()
                 .requestMatchers("/cursos/**", "/estudiantes/**",
                         "/dashboard").authenticated()
                 .anyRequest().authenticated()
@@ -54,6 +55,20 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
+            )
+            .exceptionHandling(ex -> ex
+                .accessDeniedPage("/error/403")
+            )
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives(
+                        "default-src 'self'; " +
+                        "script-src 'self'; " +
+                        "style-src 'self' 'unsafe-inline'; " +
+                        "img-src 'self' data:; " +
+                        "frame-ancestors 'none'"
+                    )
+                )
             );
         return http.build();
     }
