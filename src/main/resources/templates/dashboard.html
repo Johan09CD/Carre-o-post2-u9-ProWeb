@@ -100,6 +100,19 @@
             <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="btn btn-admin">🛡 Panel de Administración</a>
         </div>
 
+        <!-- Verificación XSS: th:text escapa el contenido -->
+        <div th:if="${nombreReal}" style="
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        color: rgba(255,255,255,0.7);
+        font-size: 13px;
+        text-align: left;">
+        👤 Nombre: <span th:text="${nombreReal}"></span>
+    </div>
+
         <form th:action="@{/logout}" method="post">
             <button type="submit" class="btn-logout">🚪 Cerrar Sesión</button>
         </form>
