@@ -1,6 +1,6 @@
-# Carreño-post1-u9 — Seguridad en Aplicaciones Web
+# Carreño-post2-u9 — Seguridad Avanzada en Aplicaciones Web
 
-Sistema de autenticación completo con Spring Security 6, BCrypt, roles diferenciados y rutas protegidas.
+Extensión del Post-Contenido 1. Implementa @PreAuthorize, mitigación XSS, CSP header y verificación CSRF.
 
 ---
 
@@ -8,7 +8,7 @@ Sistema de autenticación completo con Spring Security 6, BCrypt, roles diferenc
 
 - Java 17
 - Spring Boot 3.2.5
-- Spring Security 6
+- Spring Security 6 + @EnableMethodSecurity
 - Spring Data JPA + Hibernate
 - MySQL 8
 - Thymeleaf + thymeleaf-extras-springsecurity6
@@ -33,7 +33,7 @@ spring.datasource.username=root
 spring.datasource.password=TU_CONTRASEÑA
 ```
 
-4. Insertar el usuario ADMIN manualmente en MySQL:
+4. Insertar el usuario ADMIN:
 
 ```sql
 USE estudiantes_db;
@@ -50,7 +50,7 @@ VALUES ('Administrador', 'admin@universidad.edu',
 .\mvnw.cmd spring-boot:run
 ```
 
-Abrir en el navegador: `http://localhost:8080/login`
+Abrir en: `http://localhost:8080/login`
 
 ---
 
@@ -65,30 +65,39 @@ Abrir en el navegador: `http://localhost:8080/login`
 
 ## Rutas protegidas
 
-| Ruta          | Acceso            |
-|---------------|-------------------|
-| `/login`      | Público           |
-| `/registro`   | Público           |
-| `/dashboard`  | Autenticado       |
-| `/cursos/**`  | Autenticado       |
-| `/estudiantes/**` | Autenticado   |
-| `/admin/**`   | Solo ADMIN        |
+| Ruta              | Acceso            |
+|-------------------|-------------------|
+| `/login`          | Público           |
+| `/registro`       | Público           |
+| `/dashboard`      | Autenticado       |
+| `/cursos/**`      | Autenticado       |
+| `/estudiantes/**` | Autenticado       |
+| `/admin/**`       | Solo ADMIN        |
 
 ---
 
-## Capturas de pantalla
+## Pruebas de Seguridad
 
-### Formulario de Login
-![Login](img/InicioSesión.png)
+### 1. @PreAuthorize — Error 403 personalizado
 
-### Registro de nuevo usuario
-![Registro](img/RegistroNU.png)
+Se agregaron 4 métodos con `@PreAuthorize` en `UsuarioService`:
 
-### Dashboard Usuario (ROLE_USER)
-![Dashboard](img/Dashboard.png)
+- `listarTodos()` → solo `ROLE_ADMIN`
+- `buscarPorEmail()` → ADMIN o el propio usuario
+- `cambiarRol()` → solo `ROLE_ADMIN`
+- `actualizarNombre()` → el propio usuario o ADMIN
 
-### Panel de Administración (ROLE_ADMIN)
-![Admin](img/PanelAdmin.png)
+**Prueba:** Un usuario con rol USER intenta acceder a `/admin`. Spring Security intercepta la llamada a `listarTodos()` y redirige a la página de error 403 personalizada mostrando el nombre del usuario autenticado.
 
-### Error 403 — Acceso denegado
-![Error 403](img/Error.png)
+![403 PreAuthorize](img/403PreAuthorize.png)
+
+---
+
+### 2. Content-Security-Policy (CSP)
+
+Se configuró en `SecurityConfig` la cabecera CSP con las directivas:
+default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'
+
+**Verificación:** Chrome DevTools → Network → Response Headers → `Content-Security-Policy`.
+
+![CSP Header en DevTools](img/CSP.png)
